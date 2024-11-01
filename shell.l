@@ -39,6 +39,12 @@
 "&"		{
 		return BG;
 }
+"&>>"	{
+		return BGAPPEND;
+}
+">&"	{
+		return GREATAMP;
+}
 
 [^ \t\n][^ \t\n]*  {
 		/* Assume that file names have only alpha chars */

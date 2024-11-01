@@ -15,7 +15,7 @@
 	}
 %token	<string_val> WORD
 
-%token 	NOTOKEN GREAT APPEND LOW PIPE BG NEWLINE
+%token 	NOTOKEN GREAT APPEND LOW PIPE BG NEWLINE BGAPPEND GREATAMP
 
 
 
@@ -104,14 +104,25 @@ iomodifier_opt:
 	}
 	|
 	 iomodifier_opt APPEND WORD {
-		printf("   Yacc: append output \"%s\"\n", $3);
+		printf("   Yacc: insert append \"%s\"\n", $3);
 		Command::_currentCommand._outFile = $3;
+		command::_currentCommand._append=1;
 	}
 	| iomodifier_opt LOW WORD {
-		printf("   Yacc: low output \"%s\"\n", $3);
+		printf("   Yacc: insert input \"%s\"\n", $3);
 		Command::_currentCommand._outFile = $3;
 	}
+	| iomodifier_opt BGAPPEND WORD {
+		printf("   Yacc: insert error append \"%s\"\n", $3);
+		command::_currentCommand._errFile=$3;
+		command::_currentCommand._append=1;
+	}
+	| iomodifier_opt GREATAMP WORD {
+		printf("   Yacc: insert output and error  \"%s\"\n", $3);
+		command::_currentCommand._errFile=$3;
+	}
 	|
+		
 	;
 
 %%
