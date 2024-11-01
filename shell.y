@@ -10,14 +10,14 @@
  * you must extend it to understand the complete shell grammar
  *
  */
-
-%token	<string_val> WORD
-
-%token 	NOTOKEN GREAT NEWLINE 
-
 %union	{
 		char   *string_val;
 	}
+%token	<string_val> WORD
+
+%token 	NOTOKEN GREAT APPEND LOW PIPE BG NEWLINE
+
+
 
 %{
 extern "C" 
@@ -42,17 +42,32 @@ commands:
 	;
 
 command: simple_command
-        ;
+	|
+	;
 
 simple_command:	
-	command_and_args iomodifier_opt NEWLINE {
+	command_and_args piping iomodifier_opt background NEWLINE {
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
 	| NEWLINE 
 	| error NEWLINE { yyerrok; }
 	;
-
+piping:
+	PIPE piped_command{
+		printf("yacc:insert piping\n");
+	}
+	|
+	;
+piped_command:
+	command_and_args piping
+	;
+background:
+	BG {
+		printf("yacc running in background\n");
+	}
+	|
+	;
 command_and_args:
 	command_word arg_list {
 		Command::_currentCommand.
@@ -83,11 +98,20 @@ command_word:
 	;
 
 iomodifier_opt:
-	GREAT WORD {
-		printf("   Yacc: insert output \"%s\"\n", $2);
-		Command::_currentCommand._outFile = $2;
+	iomodifier_opt GREAT WORD {
+		printf("   Yacc: insert output \"%s\"\n", $3);
+		Command::_currentCommand._outFile = $3;
 	}
-	| /* can be empty */ 
+	|
+	 iomodifier_opt APPEND WORD {
+		printf("   Yacc: append output \"%s\"\n", $3);
+		Command::_currentCommand._outFile = $3;
+	}
+	| iomodifier_opt LOW WORD {
+		printf("   Yacc: low output \"%s\"\n", $3);
+		Command::_currentCommand._outFile = $3;
+	}
+	|
 	;
 
 %%
