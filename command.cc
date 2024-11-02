@@ -140,9 +140,42 @@ Command::execute()
 		prompt();
 		return;
 	}
-
-	// Print contents of Command data structure
 	print();
+
+
+	if(_numberOfSimpleCommands==1 and strcmp(_simpleCommands[0]->_arguments[0],"exit")==0)
+	{
+		printf("Good bye !!\n");
+		clear();
+		exit(0);
+	}
+	if(strcmp(_simpleCommands[0]->_arguments[0],"cd")==0)
+	{
+		const char *destdir;
+		if(_simpleCommands[0]->_numberOfArguments >1)
+		{
+			destdir=_simpleCommands[0]->_arguments[1];
+		}
+		else
+		{
+			destdir=getenv("HOME");
+
+			if(!destdir)
+			{
+				fprintf(stderr, "cd: HOME environment variable is not set\n");
+				clear();
+				prompt();
+				return;
+			}
+		}
+		if(chdir(destdir)!=0)
+		{
+			perror("cd");
+		}
+		clear();
+		prompt();
+		return;
+	}	
 
 	// Add execution here
 	// For every simple command fork a new process
