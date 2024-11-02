@@ -149,7 +149,16 @@ Command::execute()
 	// Setup i/o redirection
 	// and call exec
 
-	
+	int pipes[2 * (_numberOfSimpleCommands - 1)];
+
+	for(int i = 0 ;i < _numberOfSimpleCommands - 1; i++)
+	{
+		if(pipe(pipes + i *2) == -1)
+		{
+			perror("pipe");
+			exit(1);
+		}
+	}
 
 	for (int i=0;i< _numberOfSimpleCommands;i++)
 	{
@@ -173,8 +182,13 @@ Command::execute()
 				dup2(fd_in,0);
 				close(fd_in);
 			}
-
-			if(_outFile)
+			if (i > 0)
+			{
+				dup2(pipes[(i-1) * 2],0);
+			}
+			if (i == _numberOfSimpleCommands-1)
+			{
+				if(_outFile)
 			{
 				int flags= O_CREAT | O_WRONLY | (_append ? O_APPEND : O_TRUNC);
 				int fd_out= open(_outFile,flags, 0644);
@@ -186,6 +200,10 @@ Command::execute()
 				dup2(fd_out,1);
 				close(fd_out);
 			}
+			}else{
+				dup2(pipes[i * 2 + 1], 1);
+			}
+			
 			if(_errFile)
 			{
 				int flags = O_CREAT | O_WRONLY | (_append ? O_APPEND : O_TRUNC);
@@ -197,13 +215,20 @@ Command::execute()
 				dup2(fd_err, 2);
 				close(fd_err);
 			}
+			for(int j =0;j<2*(_numberOfSimpleCommands-1);j++)
+			{
+				close(pipes[j]);
+			}
 
 			execvp(_simpleCommands[i]->_arguments[0],_simpleCommands[i]->_arguments);
 			perror("execvp");
 			_exit(1);
-
-		
 		}}
+		for(int j =0;j<2*(_numberOfSimpleCommands-1);j++)
+			{
+				close(pipes[j]);
+			}
+
 	if(! _background)
 	{
 		for(int i=0;i< _numberOfSimpleCommands;i++)
@@ -231,10 +256,15 @@ Command Command::_currentCommand;
 SimpleCommand * Command::_currentSimpleCommand;
 
 int yyparse(void);
-
-int 
+void handle_ctr_c(int sig)
+{
+	printf("\n shell will ignore ctr\n");
+	printf("To terminate enter exit\n");
+	fflush(stdout);
+}
 main()
 {
+	signal(SIGINT,handle_ctr_c);
 	Command::_currentCommand.prompt();
 	yyparse();
 	return 0;
