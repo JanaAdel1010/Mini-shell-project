@@ -61,7 +61,9 @@ extern int yydebug;
     LOW = 262,                     /* LOW  */
     PIPE = 263,                    /* PIPE  */
     BG = 264,                      /* BG  */
-    NEWLINE = 265                  /* NEWLINE  */
+    NEWLINE = 265,                 /* NEWLINE  */
+    BGAPPEND = 266,                /* BGAPPEND  */
+    GREATAMP = 267                 /* GREATAMP  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -78,6 +80,8 @@ extern int yydebug;
 #define PIPE 263
 #define BG 264
 #define NEWLINE 265
+#define BGAPPEND 266
+#define GREATAMP 267
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -88,7 +92,7 @@ union YYSTYPE
 		char   *string_val;
 	
 
-#line 92 "y.tab.h"
+#line 96 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

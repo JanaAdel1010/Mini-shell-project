@@ -16,6 +16,7 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #include "command.h"
 
@@ -57,6 +58,7 @@ Command::Command()
 	_inputFile = 0;
 	_errFile = 0;
 	_background = 0;
+	_append=0;
 }
 
 void
@@ -101,6 +103,7 @@ Command:: clear()
 	_inputFile = 0;
 	_errFile = 0;
 	_background = 0;
+	_append=0;
 }
 
 void
@@ -146,6 +149,68 @@ Command::execute()
 	// Setup i/o redirection
 	// and call exec
 
+	
+
+	for (int i=0;i< _numberOfSimpleCommands;i++)
+	{
+		int pid=fork();
+		if(pid == -1)
+		{
+			perror("fork");
+			exit(2);
+		}
+		if (pid == 0)
+		{
+
+			if(_inputFile)
+			{
+				int fd_in=open(_inputFile, O_RDONLY);
+				if (fd_in < 0)
+				{
+					perror("my shell:can't open file");
+					exit(1);
+				}
+				dup2(fd_in,0);
+				close(fd_in);
+			}
+
+			if(_outFile)
+			{
+				int flags= O_CREAT | O_WRONLY | (_append ? O_APPEND : O_TRUNC);
+				int fd_out= open(_outFile,flags, 0644);
+				if(fd_out<0)
+				{
+					perror("myshell:can't open output file");
+					exit(1);
+				}
+				dup2(fd_out,1);
+				close(fd_out);
+			}
+			if(_errFile)
+			{
+				int flags = O_CREAT | O_WRONLY | (_append ? O_APPEND : O_TRUNC);
+				int fd_err = open(_errFile, flags, 0644);
+				if (fd_err < 0) {
+					perror("myshell: cannot open error file");
+					exit(1);
+				}
+				dup2(fd_err, 2);
+				close(fd_err);
+			}
+
+			execvp(_simpleCommands[i]->_arguments[0],_simpleCommands[i]->_arguments);
+			perror("execvp");
+			_exit(1);
+
+		
+		}}
+	if(! _background)
+	{
+		for(int i=0;i< _numberOfSimpleCommands;i++)
+		{
+			waitpid(-1,NULL,0);
+		}
+	}
 	// Clear to prepare for next command
 	clear();
 	
