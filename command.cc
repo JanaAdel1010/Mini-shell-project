@@ -17,9 +17,39 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
-
+#include <time.h>
 #include "command.h"
 
+void Log(int pid)
+{
+	int log_fd = open("termination_log.txt", O_WRONLY | O_APPEND | O_CREAT, 0666);
+	if (log_fd == -1)
+	{
+		perror("open log file");
+		return;
+	}
+
+	time_t now = time(NULL);
+	char *timestamp = ctime(&now);
+	timestamp[strlen(timestamp) - 1] = '\0';
+
+	char log_entry[256];
+	snprintf(log_entry, sizeof(log_entry), "Child with PID %d terminated at %s\n", pid, timestamp);
+
+	write(log_fd, log_entry, strlen(log_entry));
+
+	close(log_fd);
+}
+
+void sigchld_handler(int signum)
+{
+	int status;
+	pid_t pid;
+	while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+	{
+		Log(pid);
+	}
+}
 SimpleCommand::SimpleCommand()
 {
 	// Creat available space for 5 arguments
@@ -271,6 +301,7 @@ Command::execute()
 	{
 		int status;
 		waitpid(last_pid,NULL,0);
+		Log(last_pid);
 	}
 	// Clear to prepare for next command
 	clear();
@@ -300,7 +331,16 @@ void handle_ctr_c(int sig)
 }
 main()
 {
-	signal(SIGINT,handle_ctr_c);
+	if(signal(SIGCHLD,sigchld_handler)== SIG_ERR)
+	{
+		perror("SIGCHILD");
+		exit(1);
+	}
+	if(signal(SIGINT,handle_ctr_c)==SIG_ERR)
+	{
+		perror("SIGNIT");
+		exit(1);
+	}
 
 	Command::_currentCommand.prompt();
 	yyparse();
