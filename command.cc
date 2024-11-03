@@ -132,6 +132,7 @@ Command::print()
 	
 }
 
+
 void
 Command::execute()
 {
@@ -192,7 +193,7 @@ Command::execute()
 			exit(1);
 		}
 	}
-
+	pid_t last_pid=-1;
 	for (int i=0;i< _numberOfSimpleCommands;i++)
 	{
 		int pid=fork();
@@ -256,6 +257,10 @@ Command::execute()
 			execvp(_simpleCommands[i]->_arguments[0],_simpleCommands[i]->_arguments);
 			perror("execvp");
 			_exit(1);
+		}
+		else 
+		{
+			last_pid=pid;
 		}}
 		for(int j =0;j<2*(_numberOfSimpleCommands-1);j++)
 			{
@@ -264,10 +269,8 @@ Command::execute()
 
 	if(! _background)
 	{
-		for(int i=0;i< _numberOfSimpleCommands;i++)
-		{
-			waitpid(-1,NULL,0);
-		}
+		int status;
+		waitpid(last_pid,NULL,0);
 	}
 	// Clear to prepare for next command
 	clear();
@@ -293,11 +296,12 @@ void handle_ctr_c(int sig)
 {
 	printf("\n shell will ignore ctr\n");
 	printf("To terminate enter exit\n");
-	fflush(stdout);
+	Command::_currentCommand.prompt();
 }
 main()
 {
 	signal(SIGINT,handle_ctr_c);
+
 	Command::_currentCommand.prompt();
 	yyparse();
 	return 0;

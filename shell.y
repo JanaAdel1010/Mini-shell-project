@@ -65,8 +65,10 @@ piped_command:
 background:
 	BG {
 		printf("yacc running in background\n");
+		Command::_currentCommand._background=1;
 	}
 	|
+		{Command::_currentCommand._background=0;}
 	;
 command_and_args:
 	command_word arg_list {
