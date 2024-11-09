@@ -590,11 +590,11 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int8 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
        0,    36,    36,    40,    41,    44,    45,    49,    53,    54,
       57,    60,    63,    66,    71,    74,    81,    82,    86,    94,
-     103,   108,   113,   117,   122,   126
+     103,   108,   113,   117,   123,   128
 };
 #endif
 
@@ -1263,7 +1263,7 @@ yyreduce:
 #line 113 "shell.y"
                                   {
 		printf("   Yacc: insert input \"%s\"\n", (yyvsp[0].string_val));
-		Command::_currentCommand._outFile = (yyvsp[0].string_val);
+		Command::_currentCommand._inputFile = (yyvsp[0].string_val);
 	}
 #line 1269 "y.tab.c"
     break;
@@ -1272,23 +1272,25 @@ yyreduce:
 #line 117 "shell.y"
                                        {
 		printf("   Yacc: insert error append \"%s\"\n", (yyvsp[0].string_val));
-		Command::_currentCommand._errFile=(yyvsp[0].string_val);
-		Command::_currentCommand._append=1;
+		Command::_currentCommand._errFile = true;
+		Command::_currentCommand._outFile = (yyvsp[0].string_val);
+		Command::_currentCommand._append = 1;
 	}
-#line 1279 "y.tab.c"
+#line 1280 "y.tab.c"
     break;
 
   case 24: /* iomodifier_opt: iomodifier_opt GREATAMP WORD  */
-#line 122 "shell.y"
+#line 123 "shell.y"
                                        {
 		printf("   Yacc: insert output and error  \"%s\"\n", (yyvsp[0].string_val));
-		Command::_currentCommand._errFile=(yyvsp[0].string_val);
+		Command::_currentCommand._errFile = true;
+		Command::_currentCommand._outFile = (yyvsp[0].string_val);
 	}
-#line 1288 "y.tab.c"
+#line 1290 "y.tab.c"
     break;
 
 
-#line 1292 "y.tab.c"
+#line 1294 "y.tab.c"
 
       default: break;
     }
@@ -1481,7 +1483,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 130 "shell.y"
+#line 132 "shell.y"
 
 
 void

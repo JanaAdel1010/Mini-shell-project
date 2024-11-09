@@ -112,16 +112,18 @@ iomodifier_opt:
 	}
 	| iomodifier_opt LOW WORD {
 		printf("   Yacc: insert input \"%s\"\n", $3);
-		Command::_currentCommand._outFile = $3;
+		Command::_currentCommand._inputFile = $3;
 	}
 	| iomodifier_opt BGAPPEND WORD {
 		printf("   Yacc: insert error append \"%s\"\n", $3);
-		Command::_currentCommand._errFile=$3;
-		Command::_currentCommand._append=1;
+		Command::_currentCommand._errFile = true;
+		Command::_currentCommand._outFile = $3;
+		Command::_currentCommand._append = 1;
 	}
 	| iomodifier_opt GREATAMP WORD {
 		printf("   Yacc: insert output and error  \"%s\"\n", $3);
-		Command::_currentCommand._errFile=$3;
+		Command::_currentCommand._errFile = true;
+		Command::_currentCommand._outFile = $3;
 	}
 	|
 		
